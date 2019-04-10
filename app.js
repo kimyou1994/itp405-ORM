@@ -26,15 +26,35 @@ app.get('/tracks/:id', function(request, response) {
 	});
 });
 
-app.patch('/tracks/:trackId', function(request, response) {
+app.patch('/tracks/:id', function(request, response) {
+	let { id } = request.params;
+	Track.findByPk(id).then((track)=>{
+	if (track){
+	}else{
+		return Promise.reject();
+	}
+	}).then(()=>{
 	Track.update({
-		name: 'change name',
-		milliseconds: 100000,
-		unitPrice: 1.99},
-		{ where: { id: request.params.trackId} }
-	).then((track) => {
-		response.json(track);
+		name: request.body.name,
+		milliseconds: request.body.milliseconds,
+		unitPrice: request.body.unitPrice},
+	 	{ where:{ id : request.params.id }
+	}).then(()=>{
+		response.status(200).send();
+	},(validation)=>{
+		response.status(422).json({
+				errors: validation.errors.map((error)=>{
+		    		return {
+		    			attribute: error.path,
+		    			message: error.message
+		    		}
+		  		})
+		    })
+		});
+	},()=>{
+		response.status(404).send();
 	});
+
 })
 
 app.listen(8000);
